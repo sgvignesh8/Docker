@@ -1,0 +1,234 @@
+11_02-The docker0 Bridge
+
+#ip a
+
+docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+    link/ether 56:ed:dc:5d:e5:f9 brd ff:ff:ff:ff:ff:ff
+    inet 172.17.42.1/16 scope global docker0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::54be:92ff:fe0e:c29f/64 scope link
+
+
+root@ubuntu:/home/giri/web# brctl show docker0
+bridge name     bridge id               STP enabled     interfaces
+docker0         8000.56eddc5de5f9       no              veth1d76b34
+  
+                                                      veth628522b
+
+													  
+													  
+                                                        veth95e0f93
+root@ubuntu:/home/giri/web# docker images
+docker run -it --name=net1 webserver
+root@ubuntu:/home/giri/web# brctl show docker0
+bridge name     bridge id               STP enabled     interfaces
+docker0         8000.56eddc5de5f9       no              veth1d76b34
+                                                        veth628522b
+                                                        veth95e0f93
+
+														
+														
+root@ubuntu:/home/giri/web# docker run -it --name=net2 centos
+
+
+root@ubuntu:/home/giri/web# docker run -it --name=net2 centos
+[root@0326c840c2ba /]# root@ubuntu:/home/giri/web# brctl show docker0
+bridge name     bridge id               STP enabled     interfaces
+docker0         8000.52d9cabe187a       no              veth1d76b34
+                                                        veth628522b
+                                                        veth6877755
+                                                        veth95e0f93
+
+														
+root@ubuntu:/home/giri/web# docker attach 7a0feb1db247
+#ip -a
+
+#ping 8.8.8.8
+#traceroute
+
+
+
+11_04-Network Configuration Files
+
+docker run -it --name=net2 centos
+
+docker inspect net2
+
+ "HostnamePath": "/var/lib/docker/containers/0326c840c2ba515b5298ead1d16000329543c509d75bdacdf75c1603813a6f4f/hostname",
+    "HostsPath": "/var/lib/docker/containers/0326c840c2ba515b5298ead1d16000329543c509d75bdacdf75c1603813a6f4f/hosts",
+    "Id": "0326c840c2ba515b5298ead1d16000329543c509d75bdacdf75c1603813a6f4f",
+    "Image": "bb3d629a7cbc1ded0a8fdeb3756433ecea97f50f7c715f6995905567ecb4b6ac",
+    "LogPath": "/var/lib/docker/containers/0326c840c2ba515b5298ead1d16000329543c509d75bdacdf75c1603813a6f4f/0326c840c2ba515b5298ead1d16000329543c509d75bdacdf75c1603813a6f4f-json.log",
+    "MountLabel": "",
+    "Name": "/net2",
+    "NetworkSettings": {
+        "Bridge": "docker0",
+        "Gateway": "172.17.42.1",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "IPAddress": "172.17.0.16",
+        "IPPrefixLen": 16,
+        "IPv6Gateway": "",
+        "LinkLocalIPv6Address": "fe80::42:acff:fe11:10",
+        "LinkLocalIPv6PrefixLen": 64,
+        "MacAddress": "02:42:ac:11:00:10",
+        "PortMapping": null,
+        "Ports": {}
+
+
+root@ubuntu:/home/giri/web# docker ps
+CONTAINER ID        IMAGE               COMMAND                CREATED             STATUS              PORTS               NAMES
+0326c840c2ba        centos:latest       "/bin/bash"            28 minutes ago      Up 28 minutes                           net2
+aa6f938956f0        webserver:latest    "apache2ctl -D FOREG   30 minutes ago      Up 30 minutes       80/tcp              net1
+7a0feb1db247        ubuntu:15.04        "/bin/bash"            43 minutes ago      Up 43 minutes                           focused_lumiere
+f592e9929fc3        pinger:latest       "/bin/sh -c '$var1 $   About an hour ago   Up About an hour                        goofy_kowalevski
+root@ubuntu:/home/giri/web# ls -l /var/lib/docker/containers/0326c840c2ba515b5298ead1d16000329543c509d75bdacdf75c1603813a6f4f/
+total 36
+-rw------- 1 root root 11412 Mar 31 10:30 0326c840c2ba515b5298ead1d16000329543c509d75bdacdf75c1603813a6f4f-json.log
+
+-rw-r--r-- 1 root root  1974 Mar 31 10:03 config.json
+-rw-r--r-- 1 root root   499 Mar 31 10:03 hostconfig.json
+-rw-r--r-- 1 root root    13 Mar 31 10:03 hostname
+-rw-r--r-- 1 root root   175 Mar 31 10:03 hosts
+-rw-r--r-- 1 root root   208 Mar 31 10:03 resolv.conf
+-rw-r--r-- 1 root root    71 Mar 31 10:03 resolv.conf.hash
+
+
+
+root@ubuntu:/home/giri/web# docker  run --dns=8.8.4.4 --name=dnstest webserver
+
+#docker inspect dnstest
+
+
+11_05-Exposing Ports
+
+
+root@ubuntu:/home/giri/web# docker build -t="apache-img" .
+
+
+root@ubuntu:/home/giri/web# docker run -d -p  5001:80 --name=web1 apache-img
+c26f0029919f53dad9b523110b134a6e8f75b7c0d0571164452c60e841f0809b
+
+root@ubuntu:/home/giri/web# docker ps
+CONTAINER ID        IMAGE               COMMAND                CREATED                                   STATUS              PORTS                  NAMES
+c26f0029919f        apache-img:latest   "apache2ctl -D FOREG   16 seconds ago                            Up 16 seconds       0.0.0.0:5001->80/tcp   web1
+
+
+
+
+http://192.168.56.105:5001/
+
+
+11_06-Viewing Exposed Ports
+
+
+root@ubuntu:/home/giri/web# docker port web1
+80/tcp -> 0.0.0.0:5001
+
+
+
+root@ubuntu:/home/giri/web# docker run -d -p  5002:80/udp --name=web2 apache-img
+109c6c53964d40e81bcb02e9e57494507d09374f3af17525da598d45ef6cbeed
+
+root@ubuntu:/home/giri/web# docker port web2
+80/udp -> 0.0.0.0:5002
+
+root@ubuntu:/home/giri/web# ip -f inet a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global eth0
+       valid_lft forever preferred_lft forever
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    inet 192.168.56.105/24 brd 192.168.56.255 scope global eth1
+       valid_lft forever preferred_lft forever
+4: docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+    inet 172.17.42.1/16 scope global docker0
+       valid_lft forever preferred_lft forever
+root@ubuntu:/home/giri/web#
+
+
+
+root@ubuntu:/home/giri/web# docker port web3
+80/udp -> 192.168.56.105:5003
+
+
+
+vi Docker
+FROM ubuntu:15.04
+RUN apt-get update && apt-get install -y iputils-ping apache2
+#ENV var1=ping  var2=8.8.8.8
+#CMD $var1 $var2
+#CMD echo "hello World"
+EXPOSE 80 500 600 700 800 900
+ENTRYPOINT ["apache2ctl"]
+CMD ["-D","FOREGROUND"]
+
+#ENTRYPOINT ["apache2ctl"]
+
+
+docker build -t="throw-away" .
+
+
+
+root@ubuntu:/home/giri/web# docker run -d -P  --name=throw throw-away
+242bec0c76a5171910ef6dca04b202e48f88f698e9e09e4112f73605fa721d03
+root@ubuntu:/home/giri/web# docker port throw
+500/tcp -> 0.0.0.0:32768
+600/tcp -> 0.0.0.0:32769
+700/tcp -> 0.0.0.0:32770
+80/tcp -> 0.0.0.0:32771
+800/tcp -> 0.0.0.0:32772
+900/tcp -> 0.0.0.0:32773
+
+
+11_07-Linking Containers  More secure comminucation inside containers
+
+
+root@ubuntu:/home/giri/web# docker run --name=src -d web2
+
+root@ubuntu:/home/giri/web# docker ps
+CONTAINER ID        IMAGE               COMMAND                CREATED             STATUS              PORTS                                                                                                                                           NAMES
+242bec0c76a5        throw-away:latest   "apache2ctl -D FOREG   5 minutes ago       Up 5 minutes        0.0.0.0:32771->80/tcp, 0.0.0.0:32768->500/tcp, 0.0.0.0:32769->600/tcp, 0.0.0.0:32770->700/tcp, 0.0.0.0:32772->800/tcp, 0.0.0.0:32773->900/tcp   throw
+ff4bb81ab013        apache-img:latest   "apache2ctl -D FOREG   8 minutes ago       Up 8 minutes        80/tcp, 192.168.56.105:5003->80/udp                                                                                                             web3
+109c6c53964d        apache-img:latest   "apache2ctl -D FOREG   10 minutes ago      Up 10 minutes       80/tcp, 0.0.0.0:5002->80/udp                                                                                                                    web2
+c26f0029919f        apache-img:latest   "apache2ctl -D FOREG   22 minutes ago      Up 22 minutes       0.0.0.0:5001->80/tcp                                                                                                                            web1
+df69debf1e61        webserver:latest    "apache2ctl -D FOREG   30 minutes ago      Up 30 minutes       80/tcp                                                                                                                                          dnstest
+0326c840c2ba        centos:latest       "/bin/bash"            About an hour ago   Up About an hour                                                                                                                                                    net2
+aa6f938956f0        webserver:latest    "apache2ctl -D FOREG   About an hour ago   Up About an hour    80/tcp                                                                                                                                          net1
+7a0feb1db247        ubuntu:15.04        "/bin/bash"            About an hour ago   Up About an hour                                                                                                                                                    focused_lumiere
+f592e9929fc3        pinger:latest       "/bin/sh -c '$var1 $   2 hours ago         Up 2 hou
+
+
+root@ubuntu:/home/giri/web# docker run --name=rcvr --link=src:ali-src ubuntu:15.04 /bin/bash
+
+root@ubuntu:/home/giri/web# docker inspect rcvr
+root@ubuntu:/home/giri/web# docker inspect src |grep Links
+        "Links": null,
+
+
+root@ubuntu:/home/giri/web# docker attach rcvr
+
+env |grep ALI
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

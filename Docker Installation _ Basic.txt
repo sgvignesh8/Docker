@@ -1,0 +1,359 @@
+Containers
+CGROUPS
+
+Capabilites
+CAp_AUDIT_CONTROL
+CAP_CHOWN
+CAP_DAC_OVERRIDE
+CAP_KILL
+CAP_NET_BIND_SERVICE
+CAP_SETUID
+
+
+Docker
+
+LXC
+
+Namespace cgroup cababilites
+
+
+libcontainer 
+
+Installation ubuntu 
+
+apt-get install -y docker.io
+
+service docker.io status
+
+docker info
+docker version
+docker -version
+
+Centos installation 
+
+yum install -y docker
+
+systemctl status docker.service  
+
+systemctl start docker.service
+
+
+
+04_04-Updating Docker
+
+make sure you back your data up before performing upgrades *
+
+Most of the time containers/Docker are not an excuse to abandon best practices
+
+docker -v 
+ubuntu 
+http://askubuntu.com/questions/472412/how-do-i-upgrade-docker
+apt-get install lxc-docker
+
+docker version
+
+04_05-Granting Docker Control to Nonroot Users
+
+Docker need root 
+-create namespaces
+-create cgroups
+etc ..
+
+Binds to /var/run/docker.sock
+
+
+
+root@hack:~# ls -l /run
+
+srw-rw----  1 root     docker        0 Mar 14 14:16 docker.sock
+
+Adding Users to Docker Group
+
+
+root@hack:~$cat /etc/docker
+docker:x:112:
+root@hack:~$sudo gpasswd -a giri docker
+root@hack:~$cat /etc/docker
+
+
+root@hack:~# docker run -i -t ubuntu /bin/bash
+
+Logged in to ubuntu container 
+root@hack:~# docker run -i -t ubuntu /bin/bash
+root@783a67eb8a86:/# exit
+
+
+
+Configuring Docker to Communicate Over the Network
+
+root@hack:~#docker -v
+
+
+root@hack:~#netstat -tlp
+root@hack:~# netstat -tlp
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 localhost:mysql         *:*                     LISTEN      1252/mysqld
+tcp        0      0 *:http-alt              *:*                     LISTEN      1340/monitorix-http
+tcp        0      0 *:ssh                   *:*                     LISTEN      693/sshd
+tcp        0      0 localhost:postgresql    *:*                     LISTEN      1798/postgres
+tcp6       0      0 [::]:http               [::]:*                  LISTEN      873/apache2
+tcp6       0      0 [::]:ssh                [::]:*                  LISTEN      693/sshd
+tcp6       0      0 localhost:postgresql    [::]:*                  LISTEN      1798/postgres
+
+root@hack:~# /etc/init.d/docker stop
+[ ok ] Stopping docker (via systemctl): docker.service.
+
+
+root@hack:~# docker -H 192.168.56.105:2375 -d &
+[1] 15196
+root@hack:~# INFO[0000] +job init_networkdriver()
+INFO[0000] +job serveapi(tcp://192.168.56.102:2375)
+INFO[0000] Listening for HTTP on tcp (192.168.56.102:2375)
+INFO[0000] /!\ DON'T BIND ON ANY IP ADDRESS WITHOUT setting -tlsverify IF YOU DON'T KNOW WHAT YOU'RE DOING /!\
+INFO[0000] -job init_networkdriver() = OK (0)
+WARN[0000] mountpoint for memory not found
+INFO[0000] Loading containers: start.
+......
+INFO[0000] Loading containers: done.
+INFO[0000] docker daemon: 1.6.2 7c8fca2; execdriver: native-0.2; graphdriver: aufs
+INFO[0000] +job acceptconnections()
+INFO[0000] -job acceptconnections() = OK (0)
+INFO[0000] Daemon has completed initialization
+
+
+root@ubuntu:/home/giri# netstat -tlp
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 *:ssh                   *:*                     LISTEN      1006/sshd
+tcp        0      0 192.168.56.105:2375     *:*                     LISTEN      3065/docker
+tcp6       0      0 [::]:ssh                [::]:*                  LISTEN      1006/sshd
+
+
+
+root@ubuntu:/home/giri# docker info
+FATA[0000] Get http:///var/run/docker.sock/v1.18/info: dial unix /var/run/docker.sock: no such file or directory. Are you trying to connect to a TLS-enabled daemon without TLS?
+
+[giri@centos ~]$ sudo su
+[sudo] password for giri:
+[root@centos giri]#
+[root@centos giri]# export DOCKER_HOST="tcp://192.168.56.102:2375"
+[root@centos giri]# docker version
+Client:
+ Version:      1.8.2-el7.centos
+ API version:  1.20
+ Package Version: docker-1.8.2-10.el7.centos.x86_64
+ Go version:   go1.4.2
+ Git commit:   a01dc02/1.8.2
+ Built:
+ OS/Arch:      linux/amd64
+ (client :1.20, server: 1.18)
+[root@centos giri]#
+
+Un do  env variable
+[root@cenots giri]#  export DOCKER_HOST=
+[root@cenots giri]# docker info
+
+
+
+04_07-Playing Around with Our First Docker Container
+
+
+
+root@ubuntu:/home/giri# docker run -it centos /bin/bash
+Unable to find image 'centos:latest' locally
+'
+root@ubuntu:/home/giri# docker run -it centos /bin/bash
+Unable to find image 'centos:latest' locally
+latest: Pulling from centos
+47d44cb6f252: Pull complete
+6fdebd7b0eb5: Pull complete
+a63aae4d216f: Pull complete
+bb3d629a7cbc: Pull complete
+Digest: sha256:381f21e4c7b3724c6f420b2bcfa6e13e47ed155192869a2a04fa10f944c78476
+Status: Downloaded newer image for centos:latest
+  [root@948d41c35c06 /]#
+  
+  
+  [root@948d41c35c06 /]#   cat /etc/hosts
+172.17.0.1      948d41c35c06
+127.0.0.1       localhost
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+root@948d41c35c06 /]# uname -a
+Linux 948d41c35c06 4.2.0-27-generic #32~14.04.1-Ubuntu SMP Fri Jan 22 15:32:26 UTC 2016 x86_64 x86_64 x86_64 GNU/Linux
+
+
+[root@948d41c35c06 /]# cat /etc/redhat-release
+CentOS Linux release 7.2.1511 (Core)
+
+
+^C[root@948d41c35c06 /]# exit
+exit
+root@ubuntu:/home/giri# docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+root@ubuntu:/home/giri# docker ps -a
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS                      PORTS               NAMES
+948d41c35c06        centos:latest       "/bin/bash"         6 minutes ago       Exited (1) 10 seconds ago                       focused_pasteur
+root@ubuntu:/home/giri#
+
+root@ubuntu:/home/giri# ls -l /var/lib/docker/aufs/diff/
+total 24
+drwxr-xr-x  2 root root 4096 Mar 16 15:23 47d44cb6f252ea4f6aecf8a447972de5d9f9f2e2bec549a2f1d8f92557f4d05a
+drwxr-xr-x 17 root root 4096 Mar 16 15:32 6fdebd7b0eb5e0695812a42189609799fd743ea37dd55d4dc374eca0c57924cc
+drwxr-xr-x  8 root root 4096 Mar 16 15:38 948d41c35c06b1a6e57db19eced03b402c60e968142506fa1897adfdaf015437
+drwxr-xr-x  6 root root 4096 Mar 16 15:32 948d41c35c06b1a6e57db19eced03b402c60e968142506fa1897adfdaf015437-init
+drwxr-xr-x  2 root root 4096 Mar 16 15:32 a63aae4d216f12e186c191cdb2dbe01008863590c00e8f163c8fca229d889e18
+drwxr-xr-x  2 root root 4096 Mar 16 15:32 bb3d629a7cbc1ded0a8fdeb3756433ecea97f50f7c715f6995905567ecb4b6ac
+root@ubuntu:/home/giri#
+
+
+
+root@ubuntu:/home/giri#  ls -l /var/lib/docker/aufs/diff/948d41c35c06b1a6e57db19eced03b402c60e968142506fa1897adfdaf015437
+total 16
+dr-xr-x--- 2 root root 4096 Mar 16 15:38 root
+drwxr-xr-x 2 root root 4096 Mar 16 15:38 run
+drwxrwxrwt 2 root root 4096 Mar 16 15:37 tmp
+drwxr-xr-x 5 root root 4096 Mar 16 15:33 var
+
+
+root@ubuntu:/home/giri# ls -l /var/lib/docker/aufs/diff/948d41c35c06b1a6e57db19eced03b402c60e968142506fa1897adfdaf015437/tmp/
+    
+root@ubuntu:/home/giri# docker start 948d41c35c06
+948d41c35c06
+root@ubuntu:/home/giri# docker attach 948d41c35c06
+ cd /tmp/
+
+05. Major Docker Components
+
+05_01-Module Intro
+   
+Docker Engine
+images
+Containers
+containersRegistries and Repositories
+
+
+Docker Images
+
+root@ubuntu:/home/giri# docker run -it fedora(image) /bin/bash
+
+root@ubuntu:/home/giri# docker pull -a fedora
+root@ubuntu:/home/giri# docker images fedora
+
+
+root@ubuntu:/home/giri# docker start 948d41c35c06
+
+root@ubuntu:/home/giri# docker attach 948d41c35c06
+
+ctrl + P + Q
+
+
+Registries And Respositories
+
+
+hub.docker.com
+
+
+ 
+ 
+
+
+
+
+
+
+root@ubuntu:/home/giri# docker images fedora
+REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+fedora              rawhide             6e8e42197af0        12 days ago         250.7 MB
+fedora              23                  7427c9af1454        12 days ago         204.7 MB
+fedora              latest              7427c9af1454        12 days ago         204.7 MB
+fedora              22                  ffdb23710ebe        3 weeks ago         188.7 MB
+fedora              20                  0d071bb732e1        5 months ago        290.6 MB
+fedora              heisenbug           0d071bb732e1        5 months ago        290.6 MB
+fedora              21                  8a378e560e09        5 months ago        241.3 MB
+
+
+root@ubuntu:/home/giri# docker pull -a fedora  
+
+
+
+
+Images stored locally under  /var/lib/docker/<storage driver>
+
+
+
+Containers
+containers are launched from images
+
+
+root@ubuntu:/home/giri# docker images
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+   
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                       
+
+
+
+
+
+
+
+ https://www.kali.org/news/official-kali-linux-docker-images/
+ 
+muts@macbook-air:~$ docker pull kalilinux/kali-linux-docker
+muts@macbook-air:~$ docker run -t -i kalilinux/kali-linux-docker /bin/bash
+root@0129d62d2319:/# apt-get install metasploit
+
+
+
+
+
+
+
+
+
+
+
+
+

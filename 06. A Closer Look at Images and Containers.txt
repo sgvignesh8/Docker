@@ -1,0 +1,209 @@
+Images and containers
+
+Layer2  Images2
+layer1 Images1
+Layer0 Images0
+
+
+
+Layer 2 updates
+Apache / Nignx   layer 1
+Base Images (root(fs)  ubuntu
+
+
+06_03-Union Mounts
+
+image layering is accomplishe through union mounts
+
+R/W
+
+Layer2 Updates
+Layer 1 nginx
+Baseimage(rootfs)
+
+bootfs
+
+
+
+Where  Images Are stored 
+
+docker images
+
+docker images --tree
+
+
+root@ubuntu:/home/giri# docker pull coreos/apache
+
+root@ubuntu:/home/giri# cat /var/lib/docker/aufs/layers/87026dcb00443eb7f1725b1c9f4fb8210027a19364103854a1e5f606b95019ff
+9cd978db300e27386baa9dd791bf6dc818f13e52235b26e95703361ec3c94dc6
+6170bb7b0ad1003a827e4dc5253ba49f6719599eac485db51eaafd507c13c311
+511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158
+
+
+
+root@ubuntu:/home/giri# cat /var/lib/docker/aufs/layers/9cd978db300e27386baa9dd791bf6dc818f13e52235b26e95703361ec3c94dc6
+6170bb7b0ad1003a827e4dc5253ba49f6719599eac485db51eaafd507c13c311
+511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158
+root@ubuntu:/home/giri# cat /var/lib/docker/aufs/layers/6170bb7b0ad1003a827e4dc5253ba49f6719599eac485db51eaafd507c13c311
+511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158
+root@ubuntu:/home/giri# cat /var/lib/docker/aufs/layers/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158
+root@ubuntu:/home/giri#
+
+
+root@ubuntu:/home/giri# ls -l /var/lib/docker/aufs/diff/1b19f5a8e3aac7b4738d14654a72ff05541a4f0c44f028dfb22044b107483a02/
+total 76
+drwxr-xr-x  2 root root 4096 Mar 15 10:05 bin
+drwxr-xr-x  2 root root 4096 Apr 11  2014 boot
+drwxr-xr-x  3 root root 4096 Mar 15 10:04 dev
+drwxr-xr-x 61 root root 4096 Mar 15 10:05 etc
+drwxr-xr-x  2 root root 4096 Apr 11  2014 home
+drwxr-xr-x 12 root root 4096 Mar 15 10:04 lib
+drwxr-xr-x  2 root root 4096 Mar 15 10:04 lib64
+drwxr-xr-x  2 root root 4096 Mar 15 10:04 media
+drwxr-xr-x  2 root root 4096 Apr 11  2014 mnt
+drwxr-xr-x  2 root root 4096 Mar 15 10:04 opt
+drwxr-xr-x  2 root root 4096 Apr 11  2014 proc
+drwx------  2 root root 4096 Mar 15 10:05 root
+drwxr-xr-x  7 root root 4096 Mar 15 10:04 run
+drwxr-xr-x  2 root root 4096 Mar 15 10:05 sbin
+drwxr-xr-x  2 root root 4096 Mar 15 10:04 srv
+drwxr-xr-x  2 root root 4096 Mar 13  2014 sys
+drwxrwxrwt  2 root root 4096 Mar 15 10:05 tmp
+drwxr-xr-x 10 root root 4096 Mar 15 10:04 usr
+drwxr-xr-x 11 root root 4096 Mar 15 10:05 var
+
+
+
+06_05-Copying Images to Other Hosts
+
+
+
+root@ubuntu:/home/giri# docker run ubuntu /bin/bash -c "echo 'cool content' > /tmp/cool-file"
+
+docker ps 
+
+root@ubuntu:/home/giri# docker commit 0811881d416a fridge
+
+
+root@ubuntu:/home/giri# docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED              VIRTUAL SIZE
+fridge              latest              673203fa64f6        31 seconds ago       188 MB
+ubuntu              latest              c917d6497f55        33 hours ago         188 MB
+fedora              rawhide             6e8e42197af0        12 days ago          250.7 MB
+fedora              23                  7427c9af1454        12 days ago          204.7 MB
+fedora              latest              7427c9af1454        12 days ago          204.7 MB
+
+
+root@ubuntu:/home/giri# docker images --tree
+Warning: '--tree' is deprecated, it will be removed soon. See usage.
++-1b19f5a8e3aa Virtual Size: 187.8 MB
+¦ +-09694f91574e Virtual Size: 188 MB
+¦   +-27955ff53489 Virtual Size: 188 MB
+¦     +-c917d6497f55 Virtual Size: 188 MB Tags: ubuntu:latest
+¦       +-673203fa64f6 Virtual Size: 188 MB Tags: fridge:latest
+
+root@ubuntu:/home/giri# docker history fridge
+IMAGE               CREATED             CREATED BY                                              SIZE
+673203fa64f6        5 minutes ago       /bin/bash  -c `` echo 'cool content' > /tmp/cool-           13 B
+c917d6497f55        33 hours ago        /bin/sh -c #(nop) CMD ["/bin/bash"]             0 B
+27955ff53489        33 hours ago        /bin/sh -c sed -i 's/^#\s*\(deb.*universe\)$/   1.895 kB
+09694f91574e        33 hours ago        /bin/sh -c set -xe                                                  && echo '#!/bin/sh' > /u   194.5 kB
+1b19f5a8e3aa        33 hours ago        /bin/sh -c #(nop) ADD file:d272e313f84c4fc8a1   187.8 MB
+
+
+root@ubuntu:/home/giri# ls -h /tmp/fridge.tar
+/tmp/fridge.tar
+
+sftp from ubuntu
+
+[root@cenots tmp]# tar -tf /tmp/fridge.tar
+09694f91574ea3fca8558306c55abbbd47e01b8cb9ae782c66b9682a95c7f71e/
+09694f91574ea3fca8558306c55abbbd47e01b8cb9ae782c66b9682a95c7f71e/VERSION
+09694f91574ea3fca8558306c55abbbd47e01b8cb9ae782c66b9682a95c7f71e/json
+09694f91574ea3fca8558306c55abbbd47e01b8cb9ae782c66b9682a95c7f71e/layer.tar
+1b19f5a8e3aac7b4738d14654a72ff05541a4f0c44f028dfb22044b107483a02/
+1b19f5a8e3aac7b4738d14654a72ff05541a4f0c44f028dfb22044b107483a02/VERSION
+1b19f5a8e3aac7b4738d14654a72ff05541a4f0c44f028dfb22044b107483a02/json
+1b19f5a8e3aac7b4738d14654a72ff05541a4f0c44f028dfb22044b107483a02/layer.tar
+27955ff53489ad82d352105f6d9cb7fb0524f774b30580884fbf429b73839516/
+
+up image in centos
+
+[root@cenots tmp]# docker load -i /tmp/fridge.tar
+
+up the instance 
+
+[root@cenots tmp]# docker run -t fridge bin/bash
+
+
+06_06-The Top Writeable Layer of Containers
+
+Docker images
+Think Writable layer  -- One Per containers
+-1b19f5a8e3aa Virtual Size: 187.8 MB  -- can be shared by many 
+¦ +-09694f91574e Virtual Size: 188 MB  -- can be shared by many containers
+¦   +-27955ff53489 Virtual Size: 188 MB -- can be shared by many containers
+¦     +-c917d6497f55 Virtual Size: 188 MB Tags: ubuntu:latest -- can be shared by many container
+
+
+
+
+06_07-One Process per Container
+
+
+
+[root@localhost ~]# docker run -d kalilinux/kali-linux-docker /bin/bash -c "ping 8.8.8.8 -c 30"
+dd3a681178e7fc607ba93ee799a8c05c4d72405e03426a5f945e53d979f45ce0
+
+[root@localhost ~]# docker top 5d63324b72ba
+UID                 PID                 PPID                C                   STIME               TTY                 TIME                CMD
+root                5813                4810                0                   02:18               pts/1               00:00:00            /bin/bash
+[root@localhost ~]#
+
+06_08-Commands for Working with Containers
+
+ docker run -d ubuntu:14.04.1 /bin/bash -c "ping 8.8.8.8"
+ docker run --cpu-shares=256
+ docker run memory=1g
+ docker ps
+ [root@localhost ~]# docker inspect 5d63324b72ba
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

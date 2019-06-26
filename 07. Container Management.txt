@@ -1,0 +1,134 @@
+07_01-Module Intro
+
+
+
+07_02-Starting and Stopping Containers
+
+[root@centos giri]# docker run -it kalilinux/kali-linux-docker /bin/bash
+
+
+ctrl P  + Q 
+
+
+
+[root@centos giri]# docker stop 198743577f9d
+
+Kill container
+
+[root@centos giri]# docker kill -s 198743577f9d
+
+
+[root@centos giri]# docker restart  198743577f9d
+198743577f9d
+
+
+1 Process per container 
+
+container multiple process
+
+Deleting containers
+
+docker info 
+
+
+[root@centos giri]# docker info
+Containers: 6
+Images: 15
+
+
+Try 'wc --help' for more information.
+[root@centos giri]# ls -l /var/lib/docker/containers/ | wc -l
+7
+
+[root@centos giri]# ls -l /var/lib/docker/containers/
+total 24
+drwx------. 3 root root 4096 Mar 22 14:56 198743577f9d3e53851d2e236945ed8e2a35edd2210a457d3559931dc38a9c02
+drwx------. 3 root root 4096 Mar 21 02:18 5d63324b72ba46c03463a3b082478d3df96ef68f1cbbc615ac22504dc6b451d4
+drwx------. 3 root root 4096 Mar 21 02:22 7d17a654fd5c156078c877222322cb8aa4c1af5f4612e36d1730d5e1b1dc3966
+drwx------. 3 root root 4096 Mar 21 02:51 ad549b2554db4503cd994589fba580498a5e8d73133d7f2c3e30e1e3104b29d0
+drwx------. 3 root root 4096 Mar 21 02:54 dd3a681178e7fc607ba93ee799a8c05c4d72405e03426a5f945e53d979f45ce0
+drwx------. 3 root root 4096 Mar 21 02:53 fdde1b825b2497e2e1f0d0e16f2a4aa8f1da89e65ec47bb064dc898f4f45491a
+[root@centos giri]# docker ps -a
+CONTAINER ID        IMAGE                         COMMAND                  CREATED             STATUS                        PORTS               NAMES
+198743577f9d        kalilinux/kali-linux-docker   "/bin/bash"              18 minutes ago      Up 13 minutes                                     clever_morse
+dd3a681178e7        kalilinux/kali-linux-docker   "/bin/bash -c 'ping 8"   36 hours ago        Exited (0) 36 hours ago                           clever_pike
+fdde1b825b24        ubuntu                        "/bin/bash -c 'ping 8"   36 hours ago        Exited (0) 36 hours ago                           silly_goldstine
+ad549b2554db        ubuntu                        "/bin/bash -c 'ping 8"   36 hours ago        Exited (0) 36 hours ago                           insane_poitras
+7d17a654fd5c        kalilinux/kali-linux-docker   "/bin/bash"              36 hours ago        Exited (100) 36 hours ago                         goofy_hoover
+5d63324b72ba        kalilinux/kali-linux-docker   "/bin/bash"              36 hours ago        Exited (137) 19 minutes ago                       sick_albattani
+[root@centos giri]# docker  stop 198743577f9d
+198743577f9d
+[root@centos giri]# docker rm 198743577f9d
+198743577f9d
+[root@centos giri]# ls -l /var/lib/docker/containers/
+
+
+[root@centos giri]# alias dps="docker ps "
+[root@centos giri]# dps
+
+
+07_05-Looking Inside of Containers
+
+[root@centos giri]# docker start 7d17a654fd5c
+7d17a654fd5c
+[root@centos giri]# docker top 7d17a654fd5c
+
+
+[root@centos giri]# docker stop 7d17a654fd5c
+7d17a654fd5c
+[root@centos giri]# docker attach 7d17a654fd5c
+You cannot attach to a stopped container, start it first
+[root@centos giri]# docker start 7d17a654fd5c
+7d17a654fd5c
+[root@centos giri]# docker attach 7d17a654fd5c
+root@7d17a654fd5c:/#
+root@7d17a654fd5c:/#
+root@7d17a654fd5c:/#
+root@7d17a654fd5c:/# ps -ef
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 19:18 ?        00:00:00 /bin/bash
+root         6     1  0 19:19 ?        00:00:00 ps -ef
+
+
+07_06-Lowlevel Container Info
+
+
+
+[root@centos giri]# docker inspect 7d17a654fd5c
+
+
+[root@centos giri]# cat  /var/lib/docker/containers/5d63324b72ba46c03463a3b082478d3df96ef68f1cbbc615ac22504dc6b451d4/config.json
+{"State":{"Running":false,"Paused":false,"Restarting":false,"OOMKilled":false,"Dead":false,"Pid":0,"ExitCode":137,"Error":"","StartedAt":"2016-03-21T06:18:30.643131294Z","FinishedAt":"2016-03-22T18:50:26.363041433Z"},"ID":"5d63324b72ba46c03463a3b082478d3df96ef68f1cbbc615ac22504dc6b451d4","Created":"2016-03-21T06:18:28.870407395Z","Path":"/bin/bash","Args":[],"Config":{"Hostname":"5d63324b72ba","Domainname":"","User":"","AttachStdin":true,"AttachStdout":true,"AttachStderr":true,"ExposedPorts":null,"PublishService":"","Tty":true,"OpenStdin":true,"StdinOnce":true,"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin","DEBIAN_FRONTEND=noninteractive"],"Cmd":["/bin/bash"],"Image":"kalilinux/kali-linux-docker","Volumes":null,"VolumeDriver":"","WorkingDir":"","Entrypoint":null,"NetworkDisabled":false,"MacAddress":"","OnBuild":null,"Labels":{}},"Image":"6883df7495e6348a027521eb14c392c5d57aede7585e887c737c9eccbbeb8c60","NetworkSettings":{"Bridge":"","EndpointID":"c7e03e5ca5c05aa9fd71a8dd0cc5b797bce426974ba3b2fec47c6dfc24a411cd","Gateway":"172.17.42.1","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"HairpinMode":false,"IPAddress":"172.17.0.1","IPPrefixLen":16,"IPv6Gateway":"","LinkLocalIPv6Address":"","LinkLocalIPv6PrefixLen":0,"MacAddress":"02:42:ac:11:00:01","NetworkID":"c993f2b6d335481f0365acad416939fde6f835aaf6f8bc498f68538438ac9446","PortMapping":null,"Ports":{},"SandboxKey":"/var/run/docker/netns/5d63324b72ba","SecondaryIPAddresses":null,"SecondaryIPv6Addresses":null},"ResolvConfPath":"/var/lib/docker/containers/5d63324b72ba46c03463a3b082478d3df96ef68f1cbbc615ac22504dc6b451d4/resolv.conf","HostnamePath":"/var/lib/docker/containers/5d63324b72ba46c03463a3b082478d3df96ef68f1cbbc615ac22504dc6b451d4/hostname","HostsPath":"/var/lib/docker/containers/5d63324b72ba46c03463a3b082478d3df96ef68f1cbbc615ac22504dc6b451d4/hosts","LogPath":"/var/lib/docker/containers/5d63324b72ba46c03463a3b082478d3df96ef68f1cbbc615ac22504dc6b451d4/5d63324b72ba46c03463a3b082478d3df96ef68f1cbbc615ac22504dc6b451d4-json.log","Name":"/sick_albattani","Driver":"devicemapper","ExecDriver":"native-0.2","MountLabel":"system_u:object_r:svirt_sandbox_file_t:s0:c28,c370","ProcessLabel":"system_u:system_r:svirt_lxc_net_t:s0:c28,c370","RestartCount":0,"UpdateDns":false,"HasBeenStartedBefore":false,"MountPoints":{},"Volumes":{},"VolumesRW":{},"AppArmorProfile":""}[root@centos giri]#
+
+07_07-Getting a Shell in a Container
+
+
+[root@centos giri]# nsenter -m -u -n -p -i -t 15396 /bin/bash
+root@7d17a654fd5c:/# hostid
+11ac0500
+
+[root@centos giri]# docker exec -it 7d17a654fd5c /bin/bash
+root@7d17a654fd5c:/# exit
+exit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

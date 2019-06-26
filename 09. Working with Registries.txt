@@ -1,0 +1,133 @@
+09_02-Creating a Public Repo on Docker Hub
+
+https://hub.docker.com/
+
+09_03-Using Our Public Repo on Docker Hub
+
+09_03-Using Our Public Repo on Docker Hubcd 
+
+Password: ^Croot@ubuntu:/home/giri/docker# docker login
+Username: gvignesh8
+Password:*********
+Email: s_g_vignesh@yahoo.co.in
+WARNING: login credentials saved in /root/.dockercfg.
+Login Succeeded
+root@ubuntu:/home/giri/docker# docker pull hello-world
+
+
+
+root@ubuntu:/home/giri/docker# docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED              VIRTUAL SIZE
+
+fedora              22                  ffdb23710ebe        5 weeks ago          188.7 MB
+hello-world         latest              975b84d108f1        5 months ago         960 B
+fedora              20                  0d071bb732e1        5 months ago         290.6 MB
+fedora              heisenbug           0d071bb732e1        5 months ago         290.6 MB
+fedora              21                  8a378e560e09        5 months ago         241.3 MB
+consol/tomcat-7.0   latest              1439b1fbf911        9 months ago         601.3 MB
+coreos/apache       latest              87026dcb0044        2.122158 years ago   294.4 MB
+
+root@ubuntu:/home/giri/docker# docker images
+root@ubuntu:/home/giri/docker# docker tag 975b84d108f1 gvignesh8/hello-world
+
+root@ubuntu:/home/giri/docker# docker push gvignesh8/hello-world
+The push refers to a repository [gvignesh8/hello-world] (len: 1)
+975b84d108f1: Image already exists
+3f12c794407e: Image successfully pushed
+Digest: sha256:770be933d52e12465e72e2e550d11fae26ae3de10519285286f6a7bc0af9641f
+root@ubuntu:/home/giri/docker# docker images
+
+
+
+
+Centos 
+
+
+Delete images
+
+[root@centos giri]# docker ps -a
+[root@centos giri]# docker ps -a
+CONTAINER ID        IMAGE                         COMMAND                  CREATED             STATUS                        PORTS               NAMES
+dd3a681178e7        kalilinux/kali-linux-docker   "/bin/bash -c 'ping 8"   7 days ago          Exited (0) 7 days ago                             clever_pike
+fdde1b825b24        ubuntu                        "/bin/bash -c 'ping 8"   7 days ago          Exited (0) 7 days ago                             silly_goldstine
+ad549b2554db        ubuntu                        "/bin/bash -c 'ping 8"   7 days ago          Exited (0) 7 days ago                             insane_poitras
+7d17a654fd5c        kalilinux/kali-linux-docker   "/bin/bash"              7 days ago          Exited (137) 37 seconds ago                       goofy_hoover
+5d63324b72ba        kalilinux/kali-linux-docker   "/bin/bash"              7 days ago          Exited (137) 37 seconds ago                       sick_albattani
+[root@centos giri]# docker rm  dd3a681178e7 fdde1b825b24 ad549b2554db 7d17a654fd5c 5d63324b72ba
+dd3a681178e7
+fdde1b825b24
+ad549b2554db
+7d17a654fd5c
+5d63324b72ba
+[root@centos giri]# docker images
+REPOSITORY                              TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+docker.io/ubuntu                        latest              ab035c88d533        9 days ago          187.9 MB
+docker.io/kalilinux/kali-linux-docker   latest              6883df7495e6        13 days ago         386.5 MB
+docker.io/ubuntu                        14.04.1             5ba9dab47459        14 months ago       188.3 MB
+[root@centos giri]# docker rmi ab035c88d533 6883df7495e6 5ba9dab47459
+Untagged: docker.io/ubuntu:latest
+Deleted: ab035c88d533b656f25574a9f6f6dde8e8a9badf004d748690e9ee0b17205781
+Deleted: d28d8a6a946d1a1b25a6f4b438d1e92858a17bc58e15c5945d3ae12753a2883d
+Deleted: 267903aa9bd1cfd4c09c1e71493a83642fb5852546833e652c5979a7b2fca43c
+Deleted: 808ef855e5b658d65d5c8f3d84c5c7bf29f7c4e90bcd21c96dd992898845b9b2
+Untagged: docker.io/kalilinux/kali-linux-docker:latest
+Deleted: 6883df7495e6348a027521eb14c392c5d57aede7585e887c737c9eccbbeb8c60
+Deleted: 9dcf922effbd0c2ce8e0ac75725904f642e65eabe4596e93001ccfdb11f021fb
+Deleted: 72b391a1d189c33e6287aaf021b5decb30c3df96f077cde5176b332c97e634a9
+Deleted: 775a6b49d1a5368571e439a8a6a18c1b14504881f58a311a1176365a3e37cdf0
+Deleted: 2ae219ac610857751afff7bab647e072900c906c2aff0aec9b65d14035bcb89d
+Deleted: f017825dda70ba9c6dc040dea3ad6b5d90555260799915fd7a4c5157224bf711
+
+
+
+[root@centos giri]# docker pull gvignesh8/hello-world
+Using default tag: latest
+975b84d108f1: Download complete
+3f12c794407e: Download complete
+Status: Downloaded newer image for docker.io/gvignesh8/hello-world:latest
+
+[root@centos giri]# docker images
+REPOSITORY                        TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+docker.io/gvignesh8/hello-world   latest              975b84d108f1        5 months ago        960 B
+
+
+Creating private REPOSITORY
+
+root@ubuntu:/home/giri/docker# docker version
+Client version: 1.6.2
+Client API version: 1.18
+Go version (client): go1.2.1
+Git commit (client): 7c8fca2
+OS/Arch (client): linux/amd64
+Server version: 1.6.2
+Server API version: 1.18
+Go version (server): go1.2.1
+Git commit (server): 7c8fca2
+OS/Arch (server): linux/amd64
+root@ubuntu:/home/giri/docker# docker run -d -p 5000:5000 registry
+root@ubuntu:/home/giri/docker# docker images
+root@ubuntu:/home/giri/docker# docker ps
+
+check url
+http://192.168.56.105:5000/
+
+"\"docker-registry server\""
+
+
+
+
+root@ubuntu:/home/giri/docker# docker tag ab035c88d533 192.168.56.105:5000/priv-test
+root@ubuntu:/home/giri/docker# docker push --insecure-registry 192.168.56.105:5000/priv-test''
+
+go to centos
+
+#docker run -d 192.168.56.105:5000/priv-test
+
+
+Docker Hub Enterprise
+
+
+
+
+
+

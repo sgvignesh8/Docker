@@ -1,0 +1,424 @@
+10_02-The Build Cache
+
+root@ubuntu:/home/giri/docker# cd /docker
+
+
+root@ubuntu:/home/giri/docker# ls
+Dockerfile
+
+root@ubuntu:/home/giri/docker# docker build -t="build" .
+
+root@ubuntu:/home/giri/docker# docker build -t="build" .
+
+
+root@ubuntu:/home/giri/docker# docker build -t="build" .
+Sending build context to Docker daemon 2.048 kB
+Sending build context to Docker daemon
+Step 0 : FROM ubuntu:14.04
+ ---> ab035c88d533
+Step 1 : MAINTAINER giri@kpisoft.com
+ ---> Using cache
+ ---> e0b0f92b2de1
+Step 2 : RUN apt-get update
+ ---> Using cache
+ ---> 47f5337f06a6
+Step 3 : RUN apt-get install -f
+ ---> Using cache
+ ---> 32338e90db68
+Step 4 : CMD "ëcho","Hello World"
+ ---> Using cache
+ ---> 7fe9370b54c4
+Successfully built 7fe9370b54c4
+
+root@ubuntu:/home/giri/docker# docker build -t="build1" .
+
+root@ubuntu:/home/giri/docker# docker build -t="build2" .
+
+
+
+10_03-Dockerfile and Layers
+#docker info
+images 79
+
+root@ubuntu:/home/giri/docker# docker build -t="build" .
+
+root@ubuntu:/home/giri/docker# docker build -t="build1" .
+root@ubuntu:/home/giri/docker# docker build -t="build2" .
+root@ubuntu:/home/giri/docker# docker build -t="build3" .
+
+root@ubuntu:/home/giri/docker# docker images --tree
+
+
+root@ubuntu:/home/giri/docker# docker history 351128235d91
+IMAGE               CREATED              CREATED BY                                      SIZE
+351128235d91        About a minute ago   /bin/sh -c #(nop) CMD ["/bin/sh" "-c" "\"ëch    0 B
+7601f37d1855        2 minutes ago        /bin/sh -c apt-get install -y golang            230 MB
+999c6376974b        5 minutes ago        /bin/sh -c apt-get install -y vim               43.75 MB
+69d766adb6c2        7 minutes ago        /bin/sh -c apt-get install -y apache2           91.31 MB
+51296fa3a59c        16 minutes ago       /bin/sh -c apt-get update                       21.84 MB
+48bbf1ded3da        17 minutes ago       /bin/sh -c #(nop) MAINTAINER giri@kpisoft.com   0 B
+314a1f078530        8 weeks ago          /bin/sh -c #(nop) CMD ["/bin/bash"]             0 B
+4913eece27c0        8 weeks ago          /bin/sh -c sed -i 's/^#\s*\(deb.*universe\)$/   1.879 kB
+d09407f461e5        8 weeks ago          /bin/sh -c echo '#!/bin/sh' > /usr/sbin/polic   701 B
+c9a73777916c        8 weeks ago          /bin/sh -c #(nop) ADD file:3f4708cf445dc1b537   131.3 MB
+
+
+10_04-Building a Web Server Dockerfile
+mkdir webserver
+cd webserver
+
+vi Dockerfile
+
+#Simple web server
+FROM ubuntu:15.04
+RUN apt-get update
+RUN apt-get install -y apache2
+RUN apt-get install -y apache2-utils
+RUN apt-get install -Y vim
+RUN apt-get clean
+EXPOSE 80
+CMD ["apache2ctl", "-D", "FOREGROUND"]
+
+
+
+
+
+docker build -t="webserver" .
+
+
+
+
+Launching the Webserver Container
+
+root@ubuntu:/home/giri/web# docker  images
+REPOSITORY                      TAG                 IMAGE ID            CREATED              VIRTUAL SIZE
+webserver                       latest              db58f4df672b        40 hours ago         288.2 MB
+wbserver                        latest              db58f4df672b        40 hours ago         288.2 MB
+
+
+#docker run -d -p 80:80 webserver
+
+root@ubuntu:/home/giri/web# docker run -d -p 80:80 webserver
+3cc29f59009263ac00c3a2379fb69c2c928fcb1a127e10c05e7fabdcef5cc670
+FATA[0000] Error response from daemon: Cannot start container 3cc29f59009263ac00c3a2379fb69c2c928fcb1a127e10c05e7fabdcef5cc670: Error starting userland proxy: listen tcp 0.0.0.0:80: bind: address already in use
+root@ubuntu:/home/giri/web# service apache2 stop
+ * Stopping web server apache2         
+
+
+ *
+ 
+ 
+ http://192.168.56.105/ 
+ 
+ 
+ root@ubuntu:/home/giri/web# docker stop 39da83fc6c64
+ 
+ 
+ 
+10_06-Reducing the Number of Layers in an Image
+ 
+ 
+ root@ubuntu:/home/giri/web# docker history webserver
+IMAGE               CREATED             CREATED BY                                      SIZE
+db58f4df672b        40 hours ago        /bin/sh -c #(nop) CMD ["apache2ctl" "-D" "FOR   0 B
+f90319a32aab        40 hours ago        /bin/sh -c #(nop) EXPOSE 80/tcp                 0 B
+6152120fed74        40 hours ago        /bin/sh -c apt-get clean                        0 B
+7eb3ac8f55e6        40 hours ago        /bin/sh -c apt-get install -y  vim              43.75 MB
+711dd88b23d4        40 hours ago        /bin/sh -c apt-get install -y apache2-utils     5.215 kB
+6692089e14ac        40 hours ago        /bin/sh -c apt-get install -y apache2           91.31 MB
+df543449c51d        40 hours ago        /bin/sh -c apt-get update                       21.84 MB
+314a1f078530        9 weeks ago         /bin/sh -c #(nop) CMD ["/bin/bash"]             0 B
+4913eece27c0        9 weeks ago         /bin/sh -c sed -i 's/^#\s*\(deb.*universe\)$/   1.879 kB
+d09407f461e5        9 weeks ago         /bin/sh -c echo '#!/bin/sh' > /usr/sbin/polic   701 B
+c9a73777916c        9 weeks ago         /bin/sh -c #(nop) ADD file:3f4708cf445dc1b537   131.3 MB
+root@ubuntu:/home/giri/web#vim Dockerfile
+
+
+#Simple web server
+FROM ubuntu:15.04
+RUN apt-get update && apt-get install -y apache2 && apt-get install -y apache2-utils && apt-get install -y  vim && apt-get clean
+EXPOSE 80
+CMD ["apache2ctl", "-D", "FOREGROUND"]
+
+
+
+Single line instruction 
+root@ubuntu:/home/giri/web# vim Dockerfile
+#Simple web server
+FROM ubuntu:15.04
+RUN apt-get update && apt-get install -y \
+               apache2 \
+                apache2-utils \
+               vim \
+               &&  apt-get clean \
+             && rm -rf /var/lib/apt/lists/* /tmp/*  /var/tmp/*
+EXPOSE 80
+CMD ["apache2ctl", "-D", "FOREGROUND"]
+
+root@ubuntu:/home/giri/web# docker build -t="webserver-small" .
+
+
+root@ubuntu:/home/giri/web# docker history webserver-small
+IMAGE               CREATED              CREATED BY                                      SIZE
+5183ada401de        About a minute ago   /bin/sh -c #(nop) CMD ["apache2ctl" "-D" "FOR   0 B
+a378155ae828        About a minute ago   /bin/sh -c #(nop) EXPOSE 80/tcp                 0 B
+dd7bb0f1603c        About a minute ago   /bin/sh -c apt-get update && apt-get install    134.5 MB
+314a1f078530        9 weeks ago          /bin/sh -c #(nop) CMD ["/bin/bash"]             0 B
+4913eece27c0        9 weeks ago          /bin/sh -c sed -i 's/^#\s*\(deb.*universe\)$/   1.879 kB
+d09407f461e5        9 weeks ago          /bin/sh -c echo '#!/bin/sh' > /usr/sbin/polic   701 B
+c9a73777916c        9 weeks ago          /bin/sh -c #(nop) ADD file:3f4708cf445dc1b537   131.3 MB
+
+root@ubuntu:/home/giri/web# docker images --tree
+  +-314a1f078530 Virtual Size: 131.3 MB Tags: ubuntu:15.04
+¦       +-dd7bb0f1603c Virtual Size: 265.8 MB
+¦       ¦ +-a378155ae828 Virtual Size: 265.8 MB
+¦       ¦   +-5183ada401de Virtual Size: 265.8 MB Tags: webserver-small:latest
+¦       +-df543449c51d Virtual Size: 153.1 MB
+¦       ¦ +-6692089e14ac Virtual Size: 244.5 MB
+¦       ¦   +-711dd88b23d4 Virtual Size: 244.5 MB
+¦       ¦     +-7eb3ac8f55e6 Virtual Size: 288.2 MB
+¦       ¦       +-6152120fed74 Virtual Size: 288.2 MB
+¦       ¦         +-f90319a32aab Virtual Size: 288.2 MB
+¦       ¦           +-db58f4df672b Virtual Size: 288.2 MB Tags: webserver:latest, wbserver:latest
+¦       +-48bbf1ded3da Virtual Size: 131.3 MB
+¦         +-51296fa3a59c Virtual Size: 153.1 MB
+¦           +-69d766adb6c2 Virtual Size: 244.5 MB
+¦             +-999c6376974b Virtual Size: 288.2 MB
+¦               +-7601f37d1855 Virtual Size: 518.2 MB
+¦                 +-351128235d91 Virtual Size: 518.2 MB Tags: build1:latest, build3:latest, build:latest, build2:latest
+
+
+
+
+10_07-The CMD Instruction
+
+
+
+CMD
+Run-time
+Run commands in
+containers at launch time
+
+Equivalent of-
+docker run <args> <commands>
+docker run <args> /bin/bash
+
+One per Dockerfile
+
+
+Run
+Build-timeAdd layer to images
+Used to install apps
+  
+
+Shell Form             or                                                                                     Exec Form
+
+Commands are expressed the same way as shell commands                                              JSON array style-  ["command","arg1"]
+Commands get prepended  																		container dont need a shell
+by "/bin/sh -c"            																		Avoids string munging by the shell
+Variable expansion etc...                                                                       No shell features-
+																						  No variable expansion
+CMD echo $var1																				No special characters (&&, ||, >...)
+
+
+FROM ubuntu:15:04
+RUN apt-get update && apt-get install -y iputils-ping
+
+CMD echo "hello World"
+
+
+10_08-The ENTRYPOINT Instruction
+
+cannot be overridden at run-tim with normal commands -
+docker run ... <command>
+Any command at run-time is used as an argument to 
+ENTRYPOINT
+
+
+#vi Dockerfile
+FROM ubuntu:15.04
+RUN apt-get update && apt-get install -y iputils-ping
+
+#CMD echo "hello World"
+
+root@ubuntu:/home/giri/web# docker run -it hw2 /bin/bash
+/bin/bash
+
+
+
+Successfully built 7b85a0447295
+root@ubuntu:/home/giri/web# docker run hw2 Hello there!
+Hello there!
+
+ENTRYPOINT ["echo"]
+
+
+
+/bin/bash
+root@ubuntu:/home/giri/web# docker run hw2 Hello there!
+Hello there!
+
+
+#vi Dockerfile
+
+FROM ubuntu:15.04
+RUN apt-get update && apt-get install -y iputils-ping apache2
+
+#CMD echo "hello World"
+
+ENTRYPOINT ["apache2ctl"]
+
+
+root@ubuntu:/home/giri/web# docker build -t="web2" .
+
+#docker run -d -p 80:80 web2 -D FOREGROUND
+
+
+root@ubuntu:/home/giri/web# docker run -d -p 80:80 web2 -D FOREGROUND
+23178d39ca6dbafa9294576d9efcabc5b6471ad07be1ffe27fd0a5747fc47dcd
+root@ubuntu:/home/giri/web# docker ps
+CONTAINER ID        IMAGE               COMMAND                CREATED             STATUS              PORTS                NAMES
+23178d39ca6d        web2:latest         "apache2ctl -D FOREG   7 seconds ago       Up 6 seconds        0.0.0.0:80->80/tcp   berserk_goldstine
+root@ubuntu:/home/giri/web#
+
+
+
+
+10_09-The ENV Instruction
+
+root@ubuntu:/home/giri/web# vi  Dockerfile
+FROM ubuntu:15.04
+RUN apt-get update && apt-get install -y iputils-ping apache2
+ENV var1=Giri  var2=DOcker
+#CMD echo "hello World"
+
+#ENTRYPOINT ["apache2ctl"]
+
+root@ubuntu:/home/giri/web# docker build -t="web2" .
+root@ubuntu:/home/giri/web# docker run -it web2 /bin/bash
+
+root@a8a543019191:/# env
+var1=Giri1
+var2=DOcker
+HOSTNAME=a8a543019191
+TERM=xterm
+
+
+root@ubuntu:/home/giri/web# vi  Dockerfile
+FROM ubuntu:15.04
+RUN apt-get update && apt-get install -y iputils-ping apache2
+ENV var1=ping  var2=8.8.8.8
+CMD $var1 $var2
+#CMD echo "hello World"
+
+#ENTRYPOINT ["apache2ctl"]
+
+
+
+root@ubuntu:/home/giri/web# vi  Dockerfile
+
+root@ubuntu:/home/giri/web# docker build -t="pinger" .
+root@ubuntu:/home/giri/web# docker run -d pinger
+f592e9929fc39b9352d76472a8c6833382d1f2bfff651fe5b1d66438a555d3ed
+
+root@ubuntu:/home/giri/web# docker ps
+CONTAINER ID        IMAGE               COMMAND                CREATED             STATUS              PORTS               NAMES
+f592e9929fc3        pinger:latest       "/bin/sh -c '$var1 $   24 seconds ago      Up 23 seconds                           goofy_kowalevski
+
+
+
+root@ubuntu:/home/giri/web# docker logs goofy_kowalevski
+
+64 bytes from 8.8.8.8: icmp_seq=362 ttl=50 time=11.9 ms
+64 bytes from 8.8.8.8: icmp_seq=363 ttl=50 time=14.1 ms
+64 bytes from 8.8.8.8: icmp_seq=364 ttl=50 time=11.5 ms
+64 bytes from 8.8.8.8: icmp_seq=365 ttl=50 time=10.7 ms
+
+
+
+10_10-Volumes and the VOLUME Instruction
+
+
+root@ubuntu:/home/giri/web# docker run  -it  -v /test-vol  --name =voltainer ubuntu:15.04 /bin/bash
+
+ 
+ root@d84939790e34:/# ls -l
+total 68
+drwxr-xr-x  2 root root 4096 Jan 22 07:47 bin
+drwxr-xr-x  2 root root 4096 Apr 17  2015 boot
+drwxr-xr-x  5 root root  380 Mar 31 03:33 dev
+drwxr-xr-x 45 root root 4096 Mar 31 03:33 etc
+drwxr-xr-x  2 root root 4096 Apr 17  2015 home
+drwxr-xr-x  8 root root 4096 Jan 22 07:46 lib
+drwxr-xr-x  2 root root 4096 Jan 22 07:46 lib64
+drwxr-xr-x  2 root root 4096 Jan 22 07:46 media
+drwxr-xr-x  2 root root 4096 Apr 17  2015 mnt
+drwxr-xr-x  2 root root 4096 Jan 22 07:46 opt
+dr-xr-xr-x 98 root root    0 Mar 31 03:33 proc
+drwx------  2 root root 4096 Jan 22 07:47 root
+drwxr-xr-x  4 root root 4096 Jan 22 07:47 run
+drwxr-xr-x  2 root root 4096 Jan 26 17:48 sbin
+drwxr-xr-x  2 root root 4096 Jan 22 07:46 srv
+dr-xr-xr-x 13 root root    0 Mar 31 03:33 sys
+drwxr-xr-x  2 root root 4096 Mar 31 03:33 test-vol
+
+root@d84939790e34:/test-vol# vi testfile
+
+
+sfdsffdsf
+
+
+root@ubuntu:/home/giri/web# docker inspect voltainer
+
+  },
+    "Volumes": {
+        "/test-vol": "/var/lib/docker/vfs/dir/f61017ec60a3c1a73c9989030b93c419ba436b3ba4d8b878552ff45aafef17f2"
+    },
+    "VolumesRW": {
+        "/test-vol": true
+
+
+# ls -l /var/lib/docker/vfs/dir/f61017ec60a3c1a73c9989030b93c419ba436b3ba4d8b878552ff45aafef17f2/testfile
+
+
+
+
+
+root@ubuntu:/home/giri/web# docker run -it --volumes-from=voltainer ubuntu:15.04 /bin/bash
+root@7a0feb1db247:/# ls
+bin  boot  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  test-vol  tmp  usr  var
+
+
+
+
+Sharing data in all containers
+
+root@7a0feb1db247:/# docker run -v /data:/data
+
+ 
+ 
+ 
+ deleting volumes-from
+ 
+ docker rm -v container 
+
+ root@ubuntu:/home/giri/web# docker stop voltainer
+voltainer
+root@ubuntu:/home/giri/web# docker  rm -v voltainer
+voltainer
+root@ubuntu:/home/giri/web#
+
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+
+
+
+
+
+

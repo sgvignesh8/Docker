@@ -1,0 +1,33 @@
+08_03-Creating a Dockerfile
+#mkdir Test
+#cd test
+#vim Dockerfile
+
+# Ubuntu based Hello World container
+FROM ubuntu:15.04
+MAINTAINER giri@kpisoft.com
+RUN apt-get update
+RUN apt-get install -y apache
+CMD  "ëcho","Hello World"
+~
+
+
+08_04-Building an Image from a Dockerfile
+
+root@centos ~]# cd pluralsight/
+[root@centos pluralsight]# ls
+[root@centos pluralsight]# vim Dockerfile
+[root@centos pluralsight]# ls
+Dockerfile
+
+[root@centos pluralsight]# docker build  -t helloworld:0.1 .
+root@centos pluralsight]# docker images  --tree
+#docker history(imageid)
+#docker run helloworld(imagename)
+
+
+
+08_05-Inspecting a Dockerfile from Docker Hub
+
+
+
